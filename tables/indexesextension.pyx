@@ -75,30 +75,30 @@ cdef extern from "H5ARRAY-opt.h" nogil:
 
 # Functions for optimized operations for dealing with indexes
 cdef extern from "idx-opt.h" nogil:
-  int bisect_left_b(npy_int8 *a, long x, int hi, int offset)
-  int bisect_left_ub(npy_uint8 *a, long x, int hi, int offset)
-  int bisect_right_b(npy_int8 *a, long x, int hi, int offset)
-  int bisect_right_ub(npy_uint8 *a, long x, int hi, int offset)
-  int bisect_left_s(npy_int16 *a, long x, int hi, int offset)
-  int bisect_left_us(npy_uint16 *a, long x, int hi, int offset)
-  int bisect_right_s(npy_int16 *a, long x, int hi, int offset)
-  int bisect_right_us(npy_uint16 *a, long x, int hi, int offset)
-  int bisect_left_i(npy_int32 *a, long x, int hi, int offset)
-  int bisect_left_ui(npy_uint32 *a, npy_uint32 x, int hi, int offset)
-  int bisect_right_i(npy_int32 *a, long x, int hi, int offset)
-  int bisect_right_ui(npy_uint32 *a, npy_uint32 x, int hi, int offset)
-  int bisect_left_ll(npy_int64 *a, npy_int64 x, int hi, int offset)
-  int bisect_left_ull(npy_uint64 *a, npy_uint64 x, int hi, int offset)
-  int bisect_right_ll(npy_int64 *a, npy_int64 x, int hi, int offset)
-  int bisect_right_ull(npy_uint64 *a, npy_uint64 x, int hi, int offset)
-  int bisect_left_e(npy_float16 *a, npy_float64 x, int hi, int offset)
-  int bisect_right_e(npy_float16 *a, npy_float64 x, int hi, int offset)
-  int bisect_left_f(npy_float32 *a, npy_float64 x, int hi, int offset)
-  int bisect_right_f(npy_float32 *a, npy_float64 x, int hi, int offset)
-  int bisect_left_d(npy_float64 *a, npy_float64 x, int hi, int offset)
-  int bisect_right_d(npy_float64 *a, npy_float64 x, int hi, int offset)
-  int bisect_left_g(npy_longdouble *a, npy_longdouble x, int hi, int offset)
-  int bisect_right_g(npy_longdouble *a, npy_longdouble x, int hi, int offset)
+  int bisect_left_b(npy_int8 *a, long x, int hi)
+  int bisect_left_ub(npy_uint8 *a, long x, int hi)
+  int bisect_right_b(npy_int8 *a, long x, int hi)
+  int bisect_right_ub(npy_uint8 *a, long x, int hi)
+  int bisect_left_s(npy_int16 *a, long x, int hi)
+  int bisect_left_us(npy_uint16 *a, long x, int hi)
+  int bisect_right_s(npy_int16 *a, long x, int hi)
+  int bisect_right_us(npy_uint16 *a, long x, int hi)
+  int bisect_left_i(npy_int32 *a, long x, int hi)
+  int bisect_left_ui(npy_uint32 *a, npy_uint32 x, int hi)
+  int bisect_right_i(npy_int32 *a, long x, int hi)
+  int bisect_right_ui(npy_uint32 *a, npy_uint32 x, int hi)
+  int bisect_left_ll(npy_int64 *a, npy_int64 x, int hi)
+  int bisect_left_ull(npy_uint64 *a, npy_uint64 x, int hi)
+  int bisect_right_ll(npy_int64 *a, npy_int64 x, int hi)
+  int bisect_right_ull(npy_uint64 *a, npy_uint64 x, int hi)
+  int bisect_left_e(npy_float16 *a, npy_float64 x, int hi)
+  int bisect_right_e(npy_float16 *a, npy_float64 x, int hi)
+  int bisect_left_f(npy_float32 *a, npy_float64 x, int hi)
+  int bisect_right_f(npy_float32 *a, npy_float64 x, int hi)
+  int bisect_left_d(npy_float64 *a, npy_float64 x, int hi)
+  int bisect_right_d(npy_float64 *a, npy_float64 x, int hi)
+  int bisect_left_g(npy_longdouble *a, npy_longdouble x, int hi)
+  int bisect_right_g(npy_longdouble *a, npy_longdouble x, int hi)
 
 
 #----------------------------------------------------------------------------
@@ -742,10 +742,10 @@ cdef class IndexArray(Array):
           # Get the bounds row from the LRU cache or read them.
           rbufbc = <npy_int8 *>self.get_lru_bounds(nrow, nbounds)
           bread = 1
-          nchunk = bisect_left_b(rbufbc, item1, nbounds, 0)
+          nchunk = bisect_left_b(rbufbc, item1, nbounds)
           # Get the sorted row from the LRU cache or read it.
           rbuflb = <npy_int8 *>self.get_lru_sorted(nrow, ncs, nchunk, cs)
-          start = bisect_left_b(rbuflb, item1, cs, 0) + cs*nchunk
+          start = bisect_left_b(rbuflb, item1, cs) + cs*nchunk
         else:
           start = ss
       else:
@@ -756,11 +756,11 @@ cdef class IndexArray(Array):
           if not bread:
             # Get the bounds row from the LRU cache or read them.
             rbufbc = <npy_int8 *>self.get_lru_bounds(nrow, nbounds)
-          nchunk2 = bisect_right_b(rbufbc, item2, nbounds, 0)
+          nchunk2 = bisect_right_b(rbufbc, item2, nbounds)
           if nchunk2 <> nchunk:
             # Get the sorted row from the LRU cache or read it.
             rbuflb = <npy_int8 *>self.get_lru_sorted(nrow, ncs, nchunk2, cs)
-          stop = bisect_right_b(rbuflb, item2, cs, 0) + cs*nchunk2
+          stop = bisect_right_b(rbuflb, item2, cs) + cs*nchunk2
         else:
           stop = ss
       else:
@@ -791,10 +791,10 @@ cdef class IndexArray(Array):
           # Get the bounds row from the LRU cache or read them.
           rbufbc = <npy_uint8 *>self.get_lru_bounds(nrow, nbounds)
           bread = 1
-          nchunk = bisect_left_ub(rbufbc, item1, nbounds, 0)
+          nchunk = bisect_left_ub(rbufbc, item1, nbounds)
           # Get the sorted row from the LRU cache or read it.
           rbuflb = <npy_uint8 *>self.get_lru_sorted(nrow, ncs, nchunk, cs)
-          start = bisect_left_ub(rbuflb, item1, cs, 0) + cs*nchunk
+          start = bisect_left_ub(rbuflb, item1, cs) + cs*nchunk
         else:
           start = ss
       else:
@@ -805,11 +805,11 @@ cdef class IndexArray(Array):
           if not bread:
             # Get the bounds row from the LRU cache or read them.
             rbufbc = <npy_uint8 *>self.get_lru_bounds(nrow, nbounds)
-          nchunk2 = bisect_right_ub(rbufbc, item2, nbounds, 0)
+          nchunk2 = bisect_right_ub(rbufbc, item2, nbounds)
           if nchunk2 <> nchunk:
             # Get the sorted row from the LRU cache or read it.
             rbuflb = <npy_uint8 *>self.get_lru_sorted(nrow, ncs, nchunk2, cs)
-          stop = bisect_right_ub(rbuflb, item2, cs, 0) + cs*nchunk2
+          stop = bisect_right_ub(rbuflb, item2, cs) + cs*nchunk2
         else:
           stop = ss
       else:
@@ -840,10 +840,10 @@ cdef class IndexArray(Array):
           # Get the bounds row from the LRU cache or read them.
           rbufbc = <npy_int16 *>self.get_lru_bounds(nrow, nbounds)
           bread = 1
-          nchunk = bisect_left_s(rbufbc, item1, nbounds, 0)
+          nchunk = bisect_left_s(rbufbc, item1, nbounds)
           # Get the sorted row from the LRU cache or read it.
           rbuflb = <npy_int16 *>self.get_lru_sorted(nrow, ncs, nchunk, cs)
-          start = bisect_left_s(rbuflb, item1, cs, 0) + cs*nchunk
+          start = bisect_left_s(rbuflb, item1, cs) + cs*nchunk
         else:
           start = ss
       else:
@@ -854,11 +854,11 @@ cdef class IndexArray(Array):
           if not bread:
             # Get the bounds row from the LRU cache or read them.
             rbufbc = <npy_int16 *>self.get_lru_bounds(nrow, nbounds)
-          nchunk2 = bisect_right_s(rbufbc, item2, nbounds, 0)
+          nchunk2 = bisect_right_s(rbufbc, item2, nbounds)
           if nchunk2 <> nchunk:
             # Get the sorted row from the LRU cache or read it.
             rbuflb = <npy_int16 *>self.get_lru_sorted(nrow, ncs, nchunk2, cs)
-          stop = bisect_right_s(rbuflb, item2, cs, 0) + cs*nchunk2
+          stop = bisect_right_s(rbuflb, item2, cs) + cs*nchunk2
         else:
           stop = ss
       else:
@@ -889,10 +889,10 @@ cdef class IndexArray(Array):
           # Get the bounds row from the LRU cache or read them.
           rbufbc = <npy_uint16 *>self.get_lru_bounds(nrow, nbounds)
           bread = 1
-          nchunk = bisect_left_us(rbufbc, item1, nbounds, 0)
+          nchunk = bisect_left_us(rbufbc, item1, nbounds)
           # Get the sorted row from the LRU cache or read it.
           rbuflb = <npy_uint16 *>self.get_lru_sorted(nrow, ncs, nchunk, cs)
-          start = bisect_left_us(rbuflb, item1, cs, 0) + cs*nchunk
+          start = bisect_left_us(rbuflb, item1, cs) + cs*nchunk
         else:
           start = ss
       else:
@@ -903,11 +903,11 @@ cdef class IndexArray(Array):
           if not bread:
             # Get the bounds row from the LRU cache or read them.
             rbufbc = <npy_uint16 *>self.get_lru_bounds(nrow, nbounds)
-          nchunk2 = bisect_right_us(rbufbc, item2, nbounds, 0)
+          nchunk2 = bisect_right_us(rbufbc, item2, nbounds)
           if nchunk2 <> nchunk:
             # Get the sorted row from the LRU cache or read it.
             rbuflb = <npy_uint16 *>self.get_lru_sorted(nrow, ncs, nchunk2, cs)
-          stop = bisect_right_us(rbuflb, item2, cs, 0) + cs*nchunk2
+          stop = bisect_right_us(rbuflb, item2, cs) + cs*nchunk2
         else:
           stop = ss
       else:
@@ -938,10 +938,10 @@ cdef class IndexArray(Array):
           # Get the bounds row from the LRU cache or read them.
           rbufbc = <npy_int32 *>self.get_lru_bounds(nrow, nbounds)
           bread = 1
-          nchunk = bisect_left_i(rbufbc, item1, nbounds, 0)
+          nchunk = bisect_left_i(rbufbc, item1, nbounds)
           # Get the sorted row from the LRU cache or read it.
           rbuflb = <npy_int32 *>self.get_lru_sorted(nrow, ncs, nchunk, cs)
-          start = bisect_left_i(rbuflb, item1, cs, 0) + cs*nchunk
+          start = bisect_left_i(rbuflb, item1, cs) + cs*nchunk
         else:
           start = ss
       else:
@@ -952,11 +952,11 @@ cdef class IndexArray(Array):
           if not bread:
             # Get the bounds row from the LRU cache or read them.
             rbufbc = <npy_int32 *>self.get_lru_bounds(nrow, nbounds)
-          nchunk2 = bisect_right_i(rbufbc, item2, nbounds, 0)
+          nchunk2 = bisect_right_i(rbufbc, item2, nbounds)
           if nchunk2 <> nchunk:
             # Get the sorted row from the LRU cache or read it.
             rbuflb = <npy_int32 *>self.get_lru_sorted(nrow, ncs, nchunk2, cs)
-          stop = bisect_right_i(rbuflb, item2, cs, 0) + cs*nchunk2
+          stop = bisect_right_i(rbuflb, item2, cs) + cs*nchunk2
         else:
           stop = ss
       else:
@@ -987,10 +987,10 @@ cdef class IndexArray(Array):
           # Get the bounds row from the LRU cache or read them.
           rbufbc = <npy_uint32 *>self.get_lru_bounds(nrow, nbounds)
           bread = 1
-          nchunk = bisect_left_ui(rbufbc, item1, nbounds, 0)
+          nchunk = bisect_left_ui(rbufbc, item1, nbounds)
           # Get the sorted row from the LRU cache or read it.
           rbuflb = <npy_uint32 *>self.get_lru_sorted(nrow, ncs, nchunk, cs)
-          start = bisect_left_ui(rbuflb, item1, cs, 0) + cs*nchunk
+          start = bisect_left_ui(rbuflb, item1, cs) + cs*nchunk
         else:
           start = ss
       else:
@@ -1001,11 +1001,11 @@ cdef class IndexArray(Array):
           if not bread:
             # Get the bounds row from the LRU cache or read them.
             rbufbc = <npy_uint32 *>self.get_lru_bounds(nrow, nbounds)
-          nchunk2 = bisect_right_ui(rbufbc, item2, nbounds, 0)
+          nchunk2 = bisect_right_ui(rbufbc, item2, nbounds)
           if nchunk2 <> nchunk:
             # Get the sorted row from the LRU cache or read it.
             rbuflb = <npy_uint32 *>self.get_lru_sorted(nrow, ncs, nchunk2, cs)
-          stop = bisect_right_ui(rbuflb, item2, cs, 0) + cs*nchunk2
+          stop = bisect_right_ui(rbuflb, item2, cs) + cs*nchunk2
         else:
           stop = ss
       else:
@@ -1036,10 +1036,10 @@ cdef class IndexArray(Array):
           # Get the bounds row from the LRU cache or read them.
           rbufbc = <npy_int64 *>self.get_lru_bounds(nrow, nbounds)
           bread = 1
-          nchunk = bisect_left_ll(rbufbc, item1, nbounds, 0)
+          nchunk = bisect_left_ll(rbufbc, item1, nbounds)
           # Get the sorted row from the LRU cache or read it.
           rbuflb = <npy_int64 *>self.get_lru_sorted(nrow, ncs, nchunk, cs)
-          start = bisect_left_ll(rbuflb, item1, cs, 0) + cs*nchunk
+          start = bisect_left_ll(rbuflb, item1, cs) + cs*nchunk
         else:
           start = ss
       else:
@@ -1050,11 +1050,11 @@ cdef class IndexArray(Array):
           if not bread:
             # Get the bounds row from the LRU cache or read them.
             rbufbc = <npy_int64 *>self.get_lru_bounds(nrow, nbounds)
-          nchunk2 = bisect_right_ll(rbufbc, item2, nbounds, 0)
+          nchunk2 = bisect_right_ll(rbufbc, item2, nbounds)
           if nchunk2 <> nchunk:
             # Get the sorted row from the LRU cache or read it.
             rbuflb = <npy_int64 *>self.get_lru_sorted(nrow, ncs, nchunk2, cs)
-          stop = bisect_right_ll(rbuflb, item2, cs, 0) + cs*nchunk2
+          stop = bisect_right_ll(rbuflb, item2, cs) + cs*nchunk2
         else:
           stop = ss
       else:
@@ -1085,10 +1085,10 @@ cdef class IndexArray(Array):
           # Get the bounds row from the LRU cache or read them.
           rbufbc = <npy_uint64 *>self.get_lru_bounds(nrow, nbounds)
           bread = 1
-          nchunk = bisect_left_ull(rbufbc, item1, nbounds, 0)
+          nchunk = bisect_left_ull(rbufbc, item1, nbounds)
           # Get the sorted row from the LRU cache or read it.
           rbuflb = <npy_uint64 *>self.get_lru_sorted(nrow, ncs, nchunk, cs)
-          start = bisect_left_ull(rbuflb, item1, cs, 0) + cs*nchunk
+          start = bisect_left_ull(rbuflb, item1, cs) + cs*nchunk
         else:
           start = ss
       else:
@@ -1099,11 +1099,11 @@ cdef class IndexArray(Array):
           if not bread:
             # Get the bounds row from the LRU cache or read them.
             rbufbc = <npy_uint64 *>self.get_lru_bounds(nrow, nbounds)
-          nchunk2 = bisect_right_ull(rbufbc, item2, nbounds, 0)
+          nchunk2 = bisect_right_ull(rbufbc, item2, nbounds)
           if nchunk2 <> nchunk:
             # Get the sorted row from the LRU cache or read it.
             rbuflb = <npy_uint64 *>self.get_lru_sorted(nrow, ncs, nchunk2, cs)
-          stop = bisect_right_ull(rbuflb, item2, cs, 0) + cs*nchunk2
+          stop = bisect_right_ull(rbuflb, item2, cs) + cs*nchunk2
         else:
           stop = ss
       else:
@@ -1135,10 +1135,10 @@ cdef class IndexArray(Array):
           # Get the bounds row from the LRU cache or read them.
           rbufbc = <npy_float16 *>self.get_lru_bounds(nrow, nbounds)
           bread = 1
-          nchunk = bisect_left_e(rbufbc, item1, nbounds, 0)
+          nchunk = bisect_left_e(rbufbc, item1, nbounds)
           # Get the sorted row from the LRU cache or read it.
           rbuflb = <npy_float16 *>self.get_lru_sorted(nrow, ncs, nchunk, cs)
-          start = bisect_left_e(rbuflb, item1, cs, 0) + cs*nchunk
+          start = bisect_left_e(rbuflb, item1, cs) + cs*nchunk
         else:
           start = ss
       else:
@@ -1149,11 +1149,11 @@ cdef class IndexArray(Array):
           if not bread:
             # Get the bounds row from the LRU cache or read them.
             rbufbc = <npy_float16 *>self.get_lru_bounds(nrow, nbounds)
-          nchunk2 = bisect_right_e(rbufbc, item2, nbounds, 0)
+          nchunk2 = bisect_right_e(rbufbc, item2, nbounds)
           if nchunk2 <> nchunk:
             # Get the sorted row from the LRU cache or read it.
             rbuflb = <npy_float16 *>self.get_lru_sorted(nrow, ncs, nchunk2, cs)
-          stop = bisect_right_e(rbuflb, item2, cs, 0) + cs*nchunk2
+          stop = bisect_right_e(rbuflb, item2, cs) + cs*nchunk2
         else:
           stop = ss
       else:
@@ -1185,10 +1185,10 @@ cdef class IndexArray(Array):
           # Get the bounds row from the LRU cache or read them.
           rbufbc = <npy_float32 *>self.get_lru_bounds(nrow, nbounds)
           bread = 1
-          nchunk = bisect_left_f(rbufbc, item1, nbounds, 0)
+          nchunk = bisect_left_f(rbufbc, item1, nbounds)
           # Get the sorted row from the LRU cache or read it.
           rbuflb = <npy_float32 *>self.get_lru_sorted(nrow, ncs, nchunk, cs)
-          start = bisect_left_f(rbuflb, item1, cs, 0) + cs*nchunk
+          start = bisect_left_f(rbuflb, item1, cs) + cs*nchunk
         else:
           start = ss
       else:
@@ -1199,11 +1199,11 @@ cdef class IndexArray(Array):
           if not bread:
             # Get the bounds row from the LRU cache or read them.
             rbufbc = <npy_float32 *>self.get_lru_bounds(nrow, nbounds)
-          nchunk2 = bisect_right_f(rbufbc, item2, nbounds, 0)
+          nchunk2 = bisect_right_f(rbufbc, item2, nbounds)
           if nchunk2 <> nchunk:
             # Get the sorted row from the LRU cache or read it.
             rbuflb = <npy_float32 *>self.get_lru_sorted(nrow, ncs, nchunk2, cs)
-          stop = bisect_right_f(rbuflb, item2, cs, 0) + cs*nchunk2
+          stop = bisect_right_f(rbuflb, item2, cs) + cs*nchunk2
         else:
           stop = ss
       else:
@@ -1235,10 +1235,10 @@ cdef class IndexArray(Array):
           # Get the bounds row from the LRU cache or read them.
           rbufbc = <npy_float64 *>self.get_lru_bounds(nrow, nbounds)
           bread = 1
-          nchunk = bisect_left_d(rbufbc, item1, nbounds, 0)
+          nchunk = bisect_left_d(rbufbc, item1, nbounds)
           # Get the sorted row from the LRU cache or read it.
           rbuflb = <npy_float64 *>self.get_lru_sorted(nrow, ncs, nchunk, cs)
-          start = bisect_left_d(rbuflb, item1, cs, 0) + cs*nchunk
+          start = bisect_left_d(rbuflb, item1, cs) + cs*nchunk
         else:
           start = ss
       else:
@@ -1249,11 +1249,11 @@ cdef class IndexArray(Array):
           if not bread:
             # Get the bounds row from the LRU cache or read them.
             rbufbc = <npy_float64 *>self.get_lru_bounds(nrow, nbounds)
-          nchunk2 = bisect_right_d(rbufbc, item2, nbounds, 0)
+          nchunk2 = bisect_right_d(rbufbc, item2, nbounds)
           if nchunk2 <> nchunk:
             # Get the sorted row from the LRU cache or read it.
             rbuflb = <npy_float64 *>self.get_lru_sorted(nrow, ncs, nchunk2, cs)
-          stop = bisect_right_d(rbuflb, item2, cs, 0) + cs*nchunk2
+          stop = bisect_right_d(rbuflb, item2, cs) + cs*nchunk2
         else:
           stop = ss
       else:
@@ -1285,10 +1285,10 @@ cdef class IndexArray(Array):
           # Get the bounds row from the LRU cache or read them.
           rbufbc = <npy_longdouble *>self.get_lru_bounds(nrow, nbounds)
           bread = 1
-          nchunk = bisect_left_g(rbufbc, item1, nbounds, 0)
+          nchunk = bisect_left_g(rbufbc, item1, nbounds)
           # Get the sorted row from the LRU cache or read it.
           rbuflb = <npy_longdouble *>self.get_lru_sorted(nrow, ncs, nchunk, cs)
-          start = bisect_left_g(rbuflb, item1, cs, 0) + cs*nchunk
+          start = bisect_left_g(rbuflb, item1, cs) + cs*nchunk
         else:
           start = ss
       else:
@@ -1299,11 +1299,11 @@ cdef class IndexArray(Array):
           if not bread:
             # Get the bounds row from the LRU cache or read them.
             rbufbc = <npy_longdouble *>self.get_lru_bounds(nrow, nbounds)
-          nchunk2 = bisect_right_g(rbufbc, item2, nbounds, 0)
+          nchunk2 = bisect_right_g(rbufbc, item2, nbounds)
           if nchunk2 <> nchunk:
             # Get the sorted row from the LRU cache or read it.
             rbuflb = <npy_longdouble *>self.get_lru_sorted(nrow, ncs, nchunk2, cs)
-          stop = bisect_right_g(rbuflb, item2, cs, 0) + cs*nchunk2
+          stop = bisect_right_g(rbuflb, item2, cs) + cs*nchunk2
         else:
           stop = ss
       else:
