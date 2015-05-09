@@ -37,9 +37,8 @@ from tables.group import Group
 from tables.path import join_path
 from tables.exceptions import PerformanceWarning
 from tables.utils import is_idx, idx2long, lazyattr
-from tables.utilsextension import (nan_aware_gt, nan_aware_ge,
-                                   nan_aware_lt, nan_aware_le,
-                                   bisect_left, bisect_right)
+
+
 from tables.lrucacheextension import ObjectCache
 
 from tables._past import previous_api, previous_api_property
@@ -101,6 +100,39 @@ def _table_column_pathname_of_index(indexpathname):
     return (tablepathname, colpathname)
 
 _tableColumnPathnameOfIndex = previous_api(_table_column_pathname_of_index)
+
+
+# NaN-aware sorting with NaN as the greatest element
+# This is the same thing that numpy does in
+# numpy/core/src/npysort/npysort_common.h
+
+def nan_aware_lt(a, b):
+    return a < b or (b != b and a == a)
+
+
+def nan_aware_le(a, b):
+    return a <= b or b != b
+
+
+def nan_aware_gt(a, b):
+    return a > b or (a != a and b == b)
+
+
+def nan_aware_ge(a, b):
+    return a >= b or a != a
+
+
+#
+# Binary search routines
+#
+
+
+def bisect_left(a, x, lo=0):
+    return lo + a[lo:].searchsorted(x, 'left')
+
+
+def bisect_right(a, x):
+    return a.searchsorted(x, 'right')
 
 
 class Index(NotLoggedMixin, indexesextension.Index, Group):

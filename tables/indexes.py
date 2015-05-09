@@ -13,8 +13,6 @@
 
 """Here is defined the IndexArray class."""
 
-from bisect import bisect_left, bisect_right
-
 from tables.node import NotLoggedMixin
 from tables.carray import CArray
 from tables.earray import EArray
@@ -159,19 +157,19 @@ class IndexArray(NotLoggedMixin, EArray, indexesextension.IndexArray):
             boundscache.setitem(nrow, bounds, size)
         if result1 < 0:
             # Search the appropriate chunk in bounds cache
-            nchunk = bisect_left(bounds, item1)
+            nchunk = bounds.searchsorted(item1, 'left')
             chunk = self._read_sorted_slice(nrow, chunksize * nchunk,
                                             chunksize * (nchunk + 1))
-            result1 = indexesextension._bisect_left(chunk, item1, chunksize)
+            result1 = chunk[:chunksize].searchsorted(item1, 'left')
             result1 += chunksize * nchunk
         # Lookup in the middle of slice for item2
         if result2 < 0:
             # Search the appropriate chunk in bounds cache
-            nchunk2 = bisect_right(bounds, item2)
+            nchunk2 = bounds.searchsorted(item2, 'right')
             if nchunk2 != nchunk:
                 chunk = self._read_sorted_slice(nrow, chunksize * nchunk2,
                                                 chunksize * (nchunk2 + 1))
-            result2 = indexesextension._bisect_right(chunk, item2, chunksize)
+            result2 = chunk[:chunksize].searchsorted(item2, 'right')
             result2 += chunksize * nchunk2
         return (result1, result2)
 

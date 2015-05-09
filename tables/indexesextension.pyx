@@ -508,55 +508,6 @@ cdef void _keysort_string(char* start1, size_t ss, char* start2, size_t ts, size
     free(vp)
     free(ivp)
 
-#---------------------------------------------------------------------------
-# bisect
-#---------------------------------------------------------------------------
-
-# This has been copied from the standard module bisect.
-# Checks for the values out of limits has been added at the beginning
-# because I forsee that this should be a very common case.
-# 2004-05-20
-def _bisect_left(a, x, int hi):
-  """Return the index where to insert item x in list a, assuming a is sorted.
-
-  The return value i is such that all e in a[:i] have e < x, and all e in
-  a[i:] have e >= x.  So if x already appears in the list, i points just
-  before the leftmost x already there.
-
-  """
-
-  cdef int lo, mid
-
-  lo = 0
-  if x <= a[0]: return 0
-  if a[-1] < x: return hi
-  while lo < hi:
-      mid = (lo+hi)/2
-      if a[mid] < x: lo = mid+1
-      else: hi = mid
-  return lo
-
-
-def _bisect_right(a, x, int hi):
-  """Return the index where to insert item x in list a, assuming a is sorted.
-
-  The return value i is such that all e in a[:i] have e <= x, and all e in
-  a[i:] have e > x.  So if x already appears in the list, i points just
-  beyond the rightmost x already there.
-
-  """
-
-  cdef int lo, mid
-
-  lo = 0
-  if x < a[0]: return 0
-  if a[-1] <= x: return hi
-  while lo < hi:
-    mid = (lo+hi)/2
-    if x < a[mid]: hi = mid
-    else: lo = mid+1
-  return lo
-
 
 #===========================================================================
 # Classes
